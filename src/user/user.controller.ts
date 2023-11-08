@@ -1,8 +1,9 @@
 import { Controller, Post, Body, Get, Query, Inject } from '@nestjs/common';
-import { UserService } from './user.service';
-import { RegisterUserDto } from './dto/register-user.dto';
 import { EmailService } from 'src/email/email.service';
 import { RedisService } from 'src/redis/redis.service';
+import { UserService } from './user.service';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -31,5 +32,18 @@ export class UserController {
       html: `<p>你的注册验证码是 ${code}</p>`,
     });
     return '发送成功';
+  }
+
+  @Get('init-data')
+  async initData() {
+    await this.userService.initData();
+    return 'done';
+  }
+  @Post('login')
+  async userLogin(
+    @Body() params: { loginUser: LoginUserDto; isAdmin: boolean },
+  ) {
+    const vo = this.userService.login(params.loginUser, params.isAdmin);
+    return vo;
   }
 }
