@@ -12,6 +12,7 @@ import { RedisModule } from './redis/redis.module';
 import { EmailModule } from './email/email.module';
 import { LoginGuard } from './guard/login.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { PermissionGuard } from './guard/permission.guard';
 
 @Module({
   imports: [
@@ -62,6 +63,10 @@ import { JwtModule } from '@nestjs/jwt';
     {
       provide: APP_GUARD,
       useClass: LoginGuard
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionGuard
     }
   ],
 })

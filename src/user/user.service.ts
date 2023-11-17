@@ -27,7 +27,7 @@ export class UserService {
   @InjectRepository(Role)
   private roleRepository: Repository<Role>;
 
-  @InjectRepository(User)
+  @InjectRepository(Permission)
   private permissionRepository: Repository<Permission>;
 
   @Inject(RedisService)
@@ -35,6 +35,8 @@ export class UserService {
 
   async initData() {
     const user1 = new User();
+    
+    
     user1.username = 'zhangsan';
     user1.password = md5('111111');
     user1.email = 'xxx@xx.com';
@@ -67,7 +69,7 @@ export class UserService {
 
     role1.permissions = [permission1, permission2];
     role2.permissions = [permission1];
-
+console.log(user1);
     await this.permissionRepository.save([permission1, permission2]);
     await this.roleRepository.save([role1, role2]);
     await this.userRepository.save([user1, user2]);
@@ -113,7 +115,7 @@ export class UserService {
         username: loginUserDto.username,
         isAdmin,
       },
-      relations: ['roles', 'roles.permission'],
+      relations: ['roles', 'roles.permissions'],
     });
     if (!user) throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
     if (user.password !== md5(loginUserDto.password)) {
