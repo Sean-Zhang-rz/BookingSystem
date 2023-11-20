@@ -1,3 +1,5 @@
+import { EmailService } from 'src/email/email.service';
+import { RedisService } from 'src/redis/redis.service';
 import {
   Controller,
   Post,
@@ -9,19 +11,21 @@ import {
   ParseIntPipe,
   BadRequestException,
   DefaultValuePipe,
+  HttpStatus,
 } from '@nestjs/common';
-import { EmailService } from 'src/email/email.service';
-import { RedisService } from 'src/redis/redis.service';
-import { UserService } from './user.service';
-import { RegisterUserDto } from './dto/register-user.dto';
-import { LoginUserDto } from './dto/login-user.dto';
+import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RequireLogin, UserInfo } from 'src/custom.decorator';
 import { UserDetailVo } from './vo/user-info';
 import { UpdateUserPasswordDto } from './dto/update-user-password-dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserService } from './user.service';
+import { RegisterUserDto } from './dto/register-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
+
+@ApiTags('用户管理模块')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -38,11 +42,34 @@ export class UserController {
   @Inject(RedisService)
   private redisService: RedisService;
 
+  @ApiBody({ type: RegisterUserDto })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: '验证码已失效/验证码不正确/用户已存在',
+    type: String
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: '注册成功',
+    type: String
+  })
   @Post('register')
   async register(@Body() registerUser: RegisterUserDto) {
     return await this.userService.register(registerUser);
   }
 
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: '邮箱地址',
+    required: true,
+    example: 'xxxx@xx.com'
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: '发送成功',
+    type: String
+  })
   @Get('register-captcha')
   async captcha(@Query('address') address: string) {
     const code = Math.random().toString().slice(2, 8);
@@ -127,6 +154,7 @@ export class UserController {
     }
   }
 
+  @ApiBearerAuth()
   @Get('info')
   @RequireLogin()
   async info(@UserInfo('userId') userId: number) {
@@ -206,9 +234,9 @@ export class UserController {
         throw new BadRequestException('pageSize 应该传数字')
       }
     })) pageSize: number,
-    @Query('username') username: string,
-    @Query('nickName') nickName: string,
-    @Query('email') email: string,
+    @Query('username') username?: string,
+    @Query('nickName') nickName?: string,
+    @Query('email') email?: string,
   ) {
     return await this.userService.findUsersByPage({
       pageNo,
