@@ -6,6 +6,9 @@ import {
   Query,
   Inject,
   UnauthorizedException,
+  ParseIntPipe,
+  BadRequestException,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { EmailService } from 'src/email/email.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -183,5 +186,36 @@ export class UserController {
       html: `<p>您的更改密码验证码是${code}</p>`
     })
     return '发送成功'
+  }
+
+  @Post('freeze')
+  async freeze(@Query('id') userId: number) {
+    await this.userService.freezeUserById(userId)
+    return 'success'
+  }
+
+  @Get('list')
+  async list(
+    @Query('pageNo', new DefaultValuePipe(1), new ParseIntPipe({
+      exceptionFactory(){
+        throw new BadRequestException('pageNo 应该传数字')
+      }
+    })) pageNo: number, 
+    @Query('pageSize', new ParseIntPipe({
+      exceptionFactory(){
+        throw new BadRequestException('pageSize 应该传数字')
+      }
+    })) pageSize: number,
+    @Query('username') username: string,
+    @Query('nickName') nickName: string,
+    @Query('email') email: string,
+  ) {
+    return await this.userService.findUsersByPage({
+      pageNo,
+      pageSize,
+      username,
+      nickName,
+      email
+    })
   }
 }
