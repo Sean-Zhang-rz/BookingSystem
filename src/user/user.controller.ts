@@ -14,6 +14,9 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { RequireLogin, UserInfo } from 'src/custom.decorator';
+import { UserDetailVo } from './vo/user-info';
+import { UpdateUserPasswordDto } from './dto/update-user-password-dto';
 
 @Controller('user')
 export class UserController {
@@ -118,5 +121,44 @@ export class UserController {
     } catch (err) {
       throw new UnauthorizedException('token已失效，请重新登陆');
     }
+  }
+
+  @Get('info')
+  @RequireLogin()
+  async info(@UserInfo('userId') userId: number) {
+    const user = await this.userService.findUserDetailById(userId)
+    const vo = new UserDetailVo()
+    vo.id = user.id
+    vo.email = user.email
+    vo.username = user.username
+    vo.headPic = user.headPic
+    vo.phoneNumber = user.phoneNumber
+    vo.nickName = user.nickName
+    vo.createTime = user.createTime
+    vo.createTime = user.createTime
+    vo.isFrozen = user.isFrozen;
+    return vo;
+  }
+
+  @Post('update_password') 
+  @RequireLogin()
+  async updatePassword(
+    @UserInfo('userId') userId: number, 
+    @Body() passwordDto: UpdateUserPasswordDto
+  ) {
+    console.log(passwordDto);
+    return this.userService.updatePassword(userId, passwordDto)
+  }
+
+  @Get('update_password/captcha')
+  async updatePasswordCaptcha(@Query('address') address: string) {
+    const code = Math.random().toString().slice(2, 8)
+    await this.redisService.set(`update_password_captcha_${address}`, code, 10* 60)
+    await this.emailService.sendMail({
+      to: address,
+      subject: '更改密码验证码',
+      html: `<p>您的更改密码验证码是${code}</p>`
+    })
+    return '发送成功'
   }
 }
