@@ -4,6 +4,7 @@ import { Permission } from 'src/user/entities/permission.entity';
 import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { UnLoginException } from 'src/filter/unlogin.filter';
 
 
 interface JwtUserData {
@@ -61,7 +62,7 @@ export class LoginGuard implements CanActivate {
       }
       return true;
     } catch(e) {
-      throw new UnauthorizedException('token 失效，请重新登录');
+      throw new UnLoginException()
     }
   }
 }
