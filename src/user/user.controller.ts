@@ -91,9 +91,13 @@ export class UserController {
   }
   @Post('login')
   async userLogin(
-    @Body() params: { loginUser: LoginUserDto; isAdmin: boolean },
+    @Body() params: LoginUserDto & { 
+      isAdmin?: boolean
+    }
   ) {
-    const vo = await this.userService.login(params.loginUser, params.isAdmin);
+    console.log(params);
+    
+    const vo = await this.userService.login(params);
     vo.accessToken = this.jwtService.sign(
       {
         userId: vo.userInfo.id,

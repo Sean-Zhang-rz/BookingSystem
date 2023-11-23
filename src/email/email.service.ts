@@ -9,7 +9,7 @@ export class EmailService {
   constructor(private configService: ConfigService) {
     this.transporter = createTransport({
       host: this.configService.get('nodemailer_host'),
-      port: this.configService.get('port'),
+      port: this.configService.get('nodemailer_port'),
       secure: false,
       auth: {
         user: this.configService.get('nodemailer_auth_user'),

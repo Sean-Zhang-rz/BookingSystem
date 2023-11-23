@@ -112,7 +112,9 @@ console.log(user1);
     }
   }
 
-  async login(loginUserDto: LoginUserDto, isAdmin: boolean) {
+  async login(loginUserDto: LoginUserDto, isAdmin = false) {
+    console.log(loginUserDto, isAdmin);
+    
     const user = await this.userRepository.findOne({
       where: {
         username: loginUserDto.username,
