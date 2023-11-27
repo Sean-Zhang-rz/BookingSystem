@@ -62,12 +62,12 @@ import { PermissionGuard } from './guard/permission.guard';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: LoginGuard
+      useClass: LoginGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: PermissionGuard
-    }
+      useClass: PermissionGuard,
+    },
   ],
 })
 export class AppModule {}

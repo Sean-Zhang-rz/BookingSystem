@@ -38,8 +38,7 @@ export class UserService {
 
   async initData() {
     const user1 = new User();
-    
-    
+
     user1.username = 'zhangsan';
     user1.password = md5('111111');
     user1.email = 'xxx@xx.com';
@@ -72,7 +71,7 @@ export class UserService {
 
     role1.permissions = [permission1, permission2];
     role2.permissions = [permission1];
-console.log(user1);
+    console.log(user1);
     await this.permissionRepository.save([permission1, permission2]);
     await this.roleRepository.save([role1, role2]);
     await this.userRepository.save([user1, user2]);
@@ -114,7 +113,7 @@ console.log(user1);
 
   async login(loginUserDto: LoginUserDto, isAdmin = false) {
     console.log(loginUserDto, isAdmin);
-    
+
     const user = await this.userRepository.findOne({
       where: {
         username: loginUserDto.username,
@@ -175,83 +174,107 @@ console.log(user1);
     };
   }
 
-  async findUserDetailById(userId: number){
+  async findUserDetailById(userId: number) {
     const user = await this.userRepository.findOne({
       where: {
-        id: userId
-      }
-    })
-    return user
+        id: userId,
+      },
+    });
+    return user;
   }
 
-  async updatePassword(userId: number, passwordDto: UpdateUserPasswordDto) {
-    const captcha = await this.redisService.get(`update_password_captcha_${passwordDto.email}`)
+  async updatePassword(passwordDto: UpdateUserPasswordDto) {
+    const captcha = await this.redisService.get(
+      `update_password_captcha_${passwordDto.email}`,
+    );
     console.log(captcha);
-    
-    if (!captcha) throw new HttpException('验证码已失效', HttpStatus.BAD_REQUEST)
-    if (passwordDto.captcha !== captcha) throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST)
-    const foundUser = await this.userRepository.findOneBy({id: userId})
-    foundUser.password = md5(passwordDto.password)
+
+    if (!captcha)
+      throw new HttpException('验证码已失效', HttpStatus.BAD_REQUEST);
+    if (passwordDto.captcha !== captcha)
+      throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST);
+    const foundUser = await this.userRepository.findOneBy({
+      username: passwordDto.username,
+    });
+    console.log(foundUser);
+    console.log(passwordDto);
+
+    if (foundUser.email !== passwordDto.email)
+      throw new HttpException('邮箱不正确', HttpStatus.BAD_REQUEST);
+    foundUser.password = md5(passwordDto.password);
     try {
-      await this.userRepository.save(foundUser)
-      return '密码修改成功'
-    } catch(e) {
-      this.logger.error(e, UserService)
-      return '密码修改失败'
+      await this.userRepository.save(foundUser);
+      return '密码修改成功';
+    } catch (e) {
+      this.logger.error(e, UserService);
+      return '密码修改失败';
     }
   }
 
   async update(userId: number, updateUserDto: UpdateUserDto) {
-    const captcha = await this.redisService.get(`update_user_captcha_${updateUserDto.email}`)
-    if (!captcha) throw new HttpException('验证码已失效', HttpStatus.BAD_REQUEST)
-    if (updateUserDto.captcha !== captcha) throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST)
-    const foundUser = await this.userRepository.findOneBy({id: userId})
-    if (updateUserDto.nickName) foundUser.nickName = updateUserDto.nickName
-    if (updateUserDto.headPic) foundUser.headPic = updateUserDto.headPic
+    const captcha = await this.redisService.get(
+      `update_user_captcha_${updateUserDto.email}`,
+    );
+    if (!captcha)
+      throw new HttpException('验证码已失效', HttpStatus.BAD_REQUEST);
+    if (updateUserDto.captcha !== captcha)
+      throw new HttpException('验证码不正确', HttpStatus.BAD_REQUEST);
+    const foundUser = await this.userRepository.findOneBy({ id: userId });
+    if (updateUserDto.nickName) foundUser.nickName = updateUserDto.nickName;
+    if (updateUserDto.headPic) foundUser.headPic = updateUserDto.headPic;
     try {
-      await this.userRepository.save(foundUser)
-      return '用户信息修改成功'
-    } catch(e) {
-      this.logger.error(e, UserService)
-      return '用户信息修改失败'
+      await this.userRepository.save(foundUser);
+      return '用户信息修改成功';
+    } catch (e) {
+      this.logger.error(e, UserService);
+      return '用户信息修改失败';
     }
   }
 
   async freezeUserById(id: number) {
-    const user = await this.userRepository.findOneBy({id})
-    user.isFrozen = true
-    await this.userRepository.save(user)
+    const user = await this.userRepository.findOneBy({ id });
+    user.isFrozen = true;
+    await this.userRepository.save(user);
   }
 
   async findUsersByPage({
-    pageNo, 
+    pageNo,
     pageSize,
     username,
     nickName,
-    email
+    email,
   }: {
-    pageNo: number, 
-    pageSize: number,
-    username?: string,
-    nickName?: string,
-    email?: string
+    pageNo: number;
+    pageSize: number;
+    username?: string;
+    nickName?: string;
+    email?: string;
   }) {
-    if(pageNo == null) throw new BadRequestException('pageNo 为空')
-    if(pageSize == null) throw new BadRequestException('pageSize 为空')
-    const skipCount = (pageNo - 1) * pageSize
-    const condition: Record<string, any> = { }
-    if (username) condition.username = Like(`%${username}%`)
-    if (nickName) condition.nickName = Like(`%${nickName}%`)
-    if (email) condition.email = Like(`%${email}%`)
+    if (pageNo == null) throw new BadRequestException('pageNo 为空');
+    if (pageSize == null) throw new BadRequestException('pageSize 为空');
+    const skipCount = (pageNo - 1) * pageSize;
+    const condition: Record<string, any> = {};
+    if (username) condition.username = Like(`%${username}%`);
+    if (nickName) condition.nickName = Like(`%${nickName}%`);
+    if (email) condition.email = Like(`%${email}%`);
     const [users, totalCount] = await this.userRepository.findAndCount({
-      select: ['id', 'username', 'nickName', 'email', 'phoneNumber', 'isFrozen', 'headPic', 'createTime'],
+      select: [
+        'id',
+        'username',
+        'nickName',
+        'email',
+        'phoneNumber',
+        'isFrozen',
+        'headPic',
+        'createTime',
+      ],
       skip: skipCount,
       take: pageSize,
-      where: condition
-    })
+      where: condition,
+    });
     return {
       users,
-      totalCount
-    }
+      totalCount,
+    };
   }
 }

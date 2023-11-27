@@ -13,7 +13,13 @@ import {
   DefaultValuePipe,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { RequireLogin, UserInfo } from 'src/custom.decorator';
@@ -23,7 +29,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
-
 
 @ApiTags('用户管理模块')
 @Controller('user')
@@ -46,12 +51,12 @@ export class UserController {
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
     description: '验证码已失效/验证码不正确/用户已存在',
-    type: String
+    type: String,
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: '注册成功',
-    type: String
+    type: String,
   })
   @Post('register')
   async register(@Body() registerUser: RegisterUserDto) {
@@ -63,12 +68,12 @@ export class UserController {
     type: String,
     description: '邮箱地址',
     required: true,
-    example: 'xxxx@xx.com'
+    example: 'xxxx@xx.com',
   })
   @ApiResponse({
     status: HttpStatus.OK,
     description: '发送成功',
-    type: String
+    type: String,
   })
   @Get('register-captcha')
   async captcha(@Query('address') address: string) {
@@ -91,12 +96,13 @@ export class UserController {
   }
   @Post('login')
   async userLogin(
-    @Body() params: LoginUserDto & { 
-      isAdmin?: boolean
-    }
+    @Body()
+    params: LoginUserDto & {
+      isAdmin?: boolean;
+    },
   ) {
     console.log(params);
-    
+
     const vo = await this.userService.login(params);
     vo.accessToken = this.jwtService.sign(
       {
@@ -162,82 +168,95 @@ export class UserController {
   @Get('info')
   @RequireLogin()
   async info(@UserInfo('userId') userId: number) {
-    const user = await this.userService.findUserDetailById(userId)
-    const vo = new UserDetailVo()
-    vo.id = user.id
-    vo.email = user.email
-    vo.username = user.username
-    vo.headPic = user.headPic
-    vo.phoneNumber = user.phoneNumber
-    vo.nickName = user.nickName
-    vo.createTime = user.createTime
-    vo.createTime = user.createTime
+    const user = await this.userService.findUserDetailById(userId);
+    const vo = new UserDetailVo();
+    vo.id = user.id;
+    vo.email = user.email;
+    vo.username = user.username;
+    vo.headPic = user.headPic;
+    vo.phoneNumber = user.phoneNumber;
+    vo.nickName = user.nickName;
+    vo.createTime = user.createTime;
+    vo.createTime = user.createTime;
     vo.isFrozen = user.isFrozen;
     return vo;
   }
 
-  @Post('update_password') 
-  @RequireLogin()
-  async updatePassword(
-    @UserInfo('userId') userId: number, 
-    @Body() passwordDto: UpdateUserPasswordDto
-  ) {
+  @Post('update_password')
+  async updatePassword(@Body() passwordDto: UpdateUserPasswordDto) {
     console.log(passwordDto);
-    return this.userService.updatePassword(userId, passwordDto)
+    return this.userService.updatePassword(passwordDto);
   }
 
   @Get('update_password/captcha')
   async updatePasswordCaptcha(@Query('address') address: string) {
-    const code = Math.random().toString().slice(2, 8)
-    await this.redisService.set(`update_password_captcha_${address}`, code, 10* 60)
+    const code = Math.random().toString().slice(2, 8);
+    await this.redisService.set(
+      `update_password_captcha_${address}`,
+      code,
+      10 * 60,
+    );
     await this.emailService.sendMail({
       to: address,
       subject: '更改密码验证码',
-      html: `<p>您的更改密码验证码是${code}</p>`
-    })
-    return '发送成功'
+      html: `<p>您的更改密码验证码是${code}</p>`,
+    });
+    return '发送成功';
   }
 
-  @Post('update') 
+  @Post('update')
   @RequireLogin()
   async update(
-    @UserInfo('userId') userId: number, 
-    @Body() updateUserDto: UpdateUserDto
+    @UserInfo('userId') userId: number,
+    @Body() updateUserDto: UpdateUserDto,
   ) {
     console.log(updateUserDto);
-    return this.userService.update(userId, updateUserDto)
+    return this.userService.update(userId, updateUserDto);
   }
 
   @Get('update/captcha')
   async updateCaptcha(@Query('address') address: string) {
-    const code = Math.random().toString().slice(2, 8)
-    await this.redisService.set(`update_user_captcha_${address}`, code, 10* 60)
+    const code = Math.random().toString().slice(2, 8);
+    await this.redisService.set(
+      `update_user_captcha_${address}`,
+      code,
+      10 * 60,
+    );
     await this.emailService.sendMail({
       to: address,
       subject: '更改用户信息验证码',
-      html: `<p>您的更改密码验证码是${code}</p>`
-    })
-    return '发送成功'
+      html: `<p>您的更改密码验证码是${code}</p>`,
+    });
+    return '发送成功';
   }
 
   @Post('freeze')
   async freeze(@Query('id') userId: number) {
-    await this.userService.freezeUserById(userId)
-    return 'success'
+    await this.userService.freezeUserById(userId);
+    return 'success';
   }
 
   @Get('list')
   async list(
-    @Query('pageNo', new DefaultValuePipe(1), new ParseIntPipe({
-      exceptionFactory(){
-        throw new BadRequestException('pageNo 应该传数字')
-      }
-    })) pageNo: number, 
-    @Query('pageSize', new ParseIntPipe({
-      exceptionFactory(){
-        throw new BadRequestException('pageSize 应该传数字')
-      }
-    })) pageSize: number,
+    @Query(
+      'pageNo',
+      new DefaultValuePipe(1),
+      new ParseIntPipe({
+        exceptionFactory() {
+          throw new BadRequestException('pageNo 应该传数字');
+        },
+      }),
+    )
+    pageNo: number,
+    @Query(
+      'pageSize',
+      new ParseIntPipe({
+        exceptionFactory() {
+          throw new BadRequestException('pageSize 应该传数字');
+        },
+      }),
+    )
+    pageSize: number,
     @Query('username') username?: string,
     @Query('nickName') nickName?: string,
     @Query('email') email?: string,
@@ -247,7 +266,7 @@ export class UserController {
       pageSize,
       username,
       nickName,
-      email
-    })
+      email,
+    });
   }
 }
