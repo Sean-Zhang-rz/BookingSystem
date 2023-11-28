@@ -162,6 +162,7 @@ export class UserService {
       id: user.id,
       username: user.username,
       isAdmin: user.isAdmin,
+      email: user.email,
       roles: user.roles.map((item) => item.name),
       permissions: user.roles.reduce((arr: Permission[], item) => {
         item.permissions.forEach((permission: Permission) => {
