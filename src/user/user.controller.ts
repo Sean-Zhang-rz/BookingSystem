@@ -1,5 +1,7 @@
 import { EmailService } from 'src/email/email.service';
 import { RedisService } from 'src/redis/redis.service';
+import { storage } from 'src/my-file-storage';
+import * as path from 'path';
 import {
   Controller,
   Post,
@@ -12,8 +14,8 @@ import {
   BadRequestException,
   DefaultValuePipe,
   HttpStatus,
-  UploadedFile,
   UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -32,8 +34,6 @@ import { UserService } from './user.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import path from 'path';
-import { storage } from 'src/my-file-storage';
 
 @ApiTags('用户管理模块')
 @Controller('user')
@@ -279,7 +279,11 @@ export class UserController {
   @UseInterceptors(
     FileInterceptor('file', {
       dest: 'uploads',
+<<<<<<< HEAD
       storage: storage,
+=======
+      storage,
+>>>>>>> 92bffa33811611ff12e5bf8d82efd8d6dc2404d7
       limits: {
         fileSize: 1024 * 1024 * 3,
       },
@@ -293,8 +297,12 @@ export class UserController {
       },
     }),
   )
+<<<<<<< HEAD
   //@ts-ignore
   uploadFile(@UploadedFile() file: Express.Multer.File) {
+=======
+  uploadFile(@UploadedFile() file) {
+>>>>>>> 92bffa33811611ff12e5bf8d82efd8d6dc2404d7
     console.log('file', file);
     return file.path;
   }
