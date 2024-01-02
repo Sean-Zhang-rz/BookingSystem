@@ -221,6 +221,8 @@ export class UserController {
 
   @Get('update/captcha')
   async updateCaptcha(@UserInfo('email') address: string) {
+    console.log(address);
+
     const code = Math.random().toString().slice(2, 8);
     await this.redisService.set(
       `update_user_captcha_${address}`,
@@ -279,11 +281,7 @@ export class UserController {
   @UseInterceptors(
     FileInterceptor('file', {
       dest: 'uploads',
-<<<<<<< HEAD
-      storage: storage,
-=======
       storage,
->>>>>>> 92bffa33811611ff12e5bf8d82efd8d6dc2404d7
       limits: {
         fileSize: 1024 * 1024 * 3,
       },
@@ -297,12 +295,7 @@ export class UserController {
       },
     }),
   )
-<<<<<<< HEAD
-  //@ts-ignore
-  uploadFile(@UploadedFile() file: Express.Multer.File) {
-=======
   uploadFile(@UploadedFile() file) {
->>>>>>> 92bffa33811611ff12e5bf8d82efd8d6dc2404d7
     console.log('file', file);
     return file.path;
   }
