@@ -220,6 +220,8 @@ export class UserController {
 
   @Get('update/captcha')
   async updateCaptcha(@UserInfo('email') address: string) {
+    console.log(address);
+
     const code = Math.random().toString().slice(2, 8);
     await this.redisService.set(
       `update_user_captcha_${address}`,

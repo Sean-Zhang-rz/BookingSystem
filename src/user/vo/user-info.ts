@@ -8,11 +8,10 @@ export class UserDetailVo {
   email: string;
 
   headPic: string;
-  
-  
+
   phoneNumber: string;
 
   isFrozen: boolean;
 
-  createTime: Date
+  createTime: Date;
 }
