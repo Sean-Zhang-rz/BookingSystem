@@ -189,7 +189,6 @@ export class UserController {
 
   @Post('update_password')
   async updatePassword(@Body() passwordDto: UpdateUserPasswordDto) {
-    console.log(passwordDto);
     return this.userService.updatePassword(passwordDto);
   }
 
