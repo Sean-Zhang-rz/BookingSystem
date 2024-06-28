@@ -7,10 +7,13 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get()
-  getHello(@UserInfo('username') username: string, @UserInfo() userInfo): string {
+  getHello(
+    @UserInfo('username') username: string,
+    @UserInfo() userInfo,
+  ): string {
     console.log(username);
     console.log(userInfo);
-    
+
     return this.appService.getHello();
   }
 }
