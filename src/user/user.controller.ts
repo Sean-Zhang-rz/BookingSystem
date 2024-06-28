@@ -1,6 +1,7 @@
 import { EmailService } from 'src/email/email.service';
 import { RedisService } from 'src/redis/redis.service';
 import { storage } from 'src/my-file-storage';
+import { Request } from 'express';
 import * as path from 'path';
 import {
   Controller,
@@ -16,6 +17,7 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFile,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -172,8 +174,10 @@ export class UserController {
   @ApiBearerAuth()
   @Get('info')
   @RequireLogin()
-  async info(@UserInfo('userId') userId: number) {
-    const user = await this.userService.findUserDetailById(userId);
+  async info(@UserInfo('userId') userId: number, @Req() request: Request) {
+    console.log(request.user);
+    const id = userId || request.user.userId;
+    const user = await this.userService.findUserDetailById(id);
     const vo = new UserDetailVo();
     vo.id = user.id;
     vo.email = user.email;
